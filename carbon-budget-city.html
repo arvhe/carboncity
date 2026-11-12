@@ -1,0 +1,474 @@
+<title>Carbon Budget City</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{
+  --bg:#f4f7f3; --card:#ffffff; --fg:#1b2420; --muted:#5b6862; --line:#dbe2dc; --soft:#e9f0ea;
+  --accent:#1f7a4d; --on-accent:#ffffff; --good:#1b7a43; --bad:#b3341d;
+  --c-poll:#d9622b; --c-coin:#c4930f; --c-happy:#2f9e5f; --c-shield:#2f6fd0;
+  --font:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101513;--card:#182019;--fg:#eaf0ec;--muted:#9aa8a0;--line:#2b3730;--soft:#1e2923;--accent:#4fc487;--on-accent:#08140e;--good:#59c487;--bad:#ff8a73;--c-poll:#ff9160;--c-coin:#e8b933;--c-happy:#4fc487;--c-shield:#6aa3ff;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101513;--card:#182019;--fg:#eaf0ec;--muted:#9aa8a0;--line:#2b3730;--soft:#1e2923;--accent:#4fc487;--on-accent:#08140e;--good:#59c487;--bad:#ff8a73;--c-poll:#ff9160;--c-coin:#e8b933;--c-happy:#4fc487;--c-shield:#6aa3ff;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:20px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:1200px;margin-inline:auto;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3,p{margin:0}
+h1{font-size:clamp(2.6rem,6vw,4rem);line-height:1.1;font-weight:700}
+h2{font-size:1.7rem;line-height:1.2;font-weight:700}
+h3{font-size:1.35rem;line-height:1.3;font-weight:700}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.label{font-size:.9rem;color:var(--muted)}
+.lede{font-size:1.3rem;max-width:44ch}
+.muted{color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.btn{font:inherit;font-weight:600;font-size:1.2rem;background:var(--accent);color:var(--on-accent);border:2px solid var(--accent);border-radius:8px;padding:12px 24px;cursor:pointer}
+.btn:hover:not(:disabled){opacity:.9}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+.btn.small{font-size:.95rem;padding:7px 12px}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+
+.home-top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:start}
+.hero{display:flex;flex-direction:column;gap:18px}
+.start-form{display:flex;flex-direction:column;gap:8px;max-width:520px}
+.start-form .row{display:flex;gap:10px;flex-wrap:wrap}
+.start-form input{flex:1 1 220px;min-width:0;font:inherit;font-size:1.2rem;padding:12px;background:var(--bg);color:var(--fg);border:2px solid var(--line);border-radius:8px}
+.err{color:var(--bad);min-height:1.5em;font-size:1rem}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.step{display:flex;flex-direction:column;gap:4px}
+.step p{color:var(--muted)}
+.notice{border:1px solid var(--bad);color:var(--bad);padding:10px 14px;border-radius:6px;font-size:1rem}
+
+.awards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.award{background:var(--soft);padding:14px 16px;border-radius:8px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.award .who{font-size:1.6rem;font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+.award .val{color:var(--muted)}
+.award.empty .who{color:var(--muted);font-weight:400}
+.you{align-self:flex-start;font-size:.85rem;font-weight:600;background:var(--accent);color:var(--on-accent);padding:1px 8px;border-radius:4px}
+
+.titleblock{display:flex;gap:24px;justify-content:space-between;align-items:baseline;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px}
+.titleblock>div{display:flex;flex-direction:column;min-width:0}
+.titleblock .big{font-size:1.6rem;font-weight:700;overflow-wrap:anywhere}
+
+.instruments{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.gauge{background:var(--soft);padding:12px 14px;border-radius:8px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.gauge .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.gauge .num{font-size:2.6rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.gauge .num small{font-size:1rem;color:var(--muted);font-weight:400}
+.gauge .dots{font-size:1.8rem;letter-spacing:.15em;line-height:1.4;color:var(--accent)}
+.track{position:relative;height:10px;background:var(--line);border-radius:5px}
+.fill{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:5px;transition:width .8s ease}
+.delta{font-weight:700;font-size:1rem;white-space:nowrap}
+.good{color:var(--good)}.bad{color:var(--bad)}.zero{color:var(--muted)}
+.gauge .sub{font-size:.9rem;color:var(--muted)}
+
+.outlook{background:var(--soft);padding:12px 16px;border-radius:8px}
+
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:10px;background:var(--bg);border:3px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.opt:hover:not([aria-disabled=true]){border-color:var(--muted)}
+.opt[aria-pressed=true]{border-color:var(--accent);background:var(--soft)}
+.opt[aria-disabled=true]{opacity:.5;cursor:not-allowed}
+.opt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.opt .key{font-size:.9rem;color:var(--muted)}
+.opt .desc{color:var(--muted)}
+.lock{font-size:.95rem;color:var(--bad)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+.stat{display:flex;flex-direction:column}
+.stat b{font-size:1.2rem}
+.confirm{position:sticky;bottom:env(safe-area-inset-bottom,0px);z-index:5;display:flex;gap:16px;justify-content:space-between;align-items:center;flex-wrap:wrap;background:var(--bg);border:2px solid var(--line);padding:12px 16px;border-radius:10px}
+.confirm p{flex:1 1 300px;min-width:0}
+
+.outcome{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.card{border:1px solid var(--line);padding:18px;border-radius:10px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.result-line{border-left:3px solid var(--accent);padding-left:12px}
+.changes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.changes li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:1.15rem}
+.changes li b{font-variant-numeric:tabular-nums}
+.nextbar{display:flex;justify-content:flex-end}
+
+.final-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:14px;align-items:stretch}
+.bignum{font-size:clamp(3.6rem,10vw,6rem);font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.statrow{display:flex;gap:24px;flex-wrap:wrap}
+.statrow div{display:flex;flex-direction:column}
+.statrow b{font-size:1.8rem;line-height:1.1}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font:inherit;font-size:1rem;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
+.tab[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th{font-weight:600;font-size:.95rem;color:var(--muted);text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+tr.me td{background:var(--soft)}
+.badges{display:inline-flex;gap:6px;flex-wrap:wrap;margin-left:8px}
+.badge{font-size:.8rem;border:1px solid var(--accent);color:var(--accent);padding:0 6px;border-radius:4px}
+.recap{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.recap li{display:grid;grid-template-columns:60px minmax(0,1fr) minmax(0,.8fr);gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.recap .y{color:var(--muted)}
+.prompts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.prompt{background:var(--soft);padding:14px 16px;border-radius:8px}
+.foot{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:16px}
+.foot .grp{display:flex;gap:10px;flex-wrap:wrap}
+
+@media (max-width:900px){
+  .home-top,.outcome,.final-top{grid-template-columns:minmax(0,1fr)}
+  .recap li{grid-template-columns:56px minmax(0,1fr)}
+  .recap li span:last-child{grid-column:2}
+}
+@media (min-width:901px){.instruments{grid-template-columns:1.3fr repeat(4,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+
+.btn{border-radius:10px;box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.start-form input{background:var(--card);border-radius:10px}
+.banner{margin-block:4px}
+.banner svg{width:100%;max-width:560px;height:auto;display:block}
+.card{background:var(--card);border-radius:14px;box-shadow:0 1px 3px rgba(20,40,30,.06)}
+.titleblock{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 22px}
+.gauge{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c,var(--accent));border-radius:12px;box-shadow:0 1px 3px rgba(20,40,30,.06)}
+.gauge .fill{background:var(--c,var(--accent))}
+.gauge .dots{color:var(--c,var(--accent))}
+.outlook{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c-poll);border-radius:12px}
+.opt{background:var(--card);border-radius:14px;box-shadow:0 1px 3px rgba(20,40,30,.06)}
+.opt[aria-pressed=true]{background:var(--soft);border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.pill{align-self:flex-start;font-size:.85rem;font-weight:700;padding:2px 12px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.pill.t1{background:transparent;border:2px solid var(--accent);color:var(--accent);padding:0 10px}
+.pill.t2{background:var(--accent);color:var(--on-accent)}
+.confirm{background:var(--card);border-radius:14px}
+.prompt{background:var(--card);border:1px solid var(--line)}
+</style>
+
+<div id="app"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- game data ---------- */
+var N = 5, INCOME = 3, MAXS = 6, WARM0 = 1.5, WARMK = 0.025;
+var START = {P:8, money:2, hap:5, shield:0};
+
+/* cost = coins, p = pollution change, h = happiness change, s = shields gained */
+var ROUNDS = [
+ {year:2025, title:'Power the city', sdg:'SDG 9 · Infrastructure', options:[
+  {id:'1a', name:'Burn coal', desc:'Cheap power. Dirty smoke.', cost:0, p:1, h:1, s:0},
+  {id:'1b', name:'Use gas', desc:'A little cleaner.', cost:2, p:-1, h:1, s:0},
+  {id:'1c', name:'Wind and solar', desc:'Clean power. Costs more.', cost:4, p:-3, h:2, s:1}]},
+ {year:2030, title:'Get around the city', sdg:'SDG 9 · Infrastructure', options:[
+  {id:'2a', name:'Build big roads', desc:'More cars. More smoke.', cost:0, p:1, h:1, s:0},
+  {id:'2b', name:'Electric buses', desc:'The same buses, no smoke.', cost:2, p:-1, h:1, s:0},
+  {id:'2c', name:'Trains and bike paths', desc:'Clean and fast.', cost:4, p:-3, h:2, s:1}]},
+ {year:2035, title:'Make things', sdg:'SDG 9 · Industry', options:[
+  {id:'3a', name:'Old smoky factories', desc:'Cheap, but dirty.', cost:0, p:1, h:1, s:0},
+  {id:'3b', name:'Save energy in factories', desc:'Use less power.', cost:2, p:-1, h:1, s:0},
+  {id:'3c', name:'New green factories', desc:'Clever, clean technology.', cost:4, p:-3, h:2, s:1}]},
+ {year:2040, title:'Build homes', sdg:'SDG 9 · Buildings', options:[
+  {id:'4a', name:'Cheap leaky houses', desc:'Too cold, too hot and weak.', cost:0, p:1, h:1, s:0},
+  {id:'4b', name:'Warm, well-built houses', desc:'Cosy and efficient.', cost:2, p:-1, h:1, s:0},
+  {id:'4c', name:'Strong green houses', desc:'Built for storms and heat.', cost:4, p:-2, h:2, s:1}]},
+ {year:2045, title:'Protect the city', sdg:'SDG 13 · Climate action', options:[
+  {id:'5a', name:'Do the minimum', desc:'Hope for good weather.', cost:0, p:0, h:0, s:0},
+  {id:'5b', name:'Trees and flood walls', desc:'Shade and dry streets.', cost:2, p:-1, h:1, s:1},
+  {id:'5c', name:'Parks and warning alerts', desc:'Parks soak up rain. Everyone gets a warning.', cost:4, p:-1, h:2, s:2}]}
+];
+var TIERS = ['Cheapest','Middle','Big investment'];
+
+/* hit = damage events: base happiness and coin loss, each shield blocks 1 point */
+var EVENTS = {
+ heat:{name:'Heatwave', desc:'It is very hot for weeks.', hint:'Shields help.', hit:{h:3,m:0}},
+ flood:{name:'Flood', desc:'Heavy rain fills the streets.', hint:'Shields help.', hit:{h:1,m:3}},
+ drought:{name:'Drought', desc:'No rain for months.', hint:'Shields help.', hit:{h:2,m:1}},
+ storm:{name:'Big storm', desc:'Wind breaks roofs and power lines.', hint:'Shields help.', hit:{h:1,m:2}},
+ smoke:{name:'Wildfire smoke', desc:'The sky turns orange.', hint:'Shields help.', hit:{h:3,m:0}},
+ cold:{name:'Power cut', desc:'A cold snap overloads the power grid.', hint:'Shields help.', hit:{h:2,m:1}},
+ price:{name:'Fuel prices jump', desc:'Cities that burn a lot of fuel pay a big bill.', hint:'Less pollution means a smaller bill.'},
+ boom:{name:'Green boom', desc:'Investors give coins to cleaner cities.', hint:'Less pollution means more coins.', positive:true}
+};
+var CATS = [
+ {key:'temp', dir:-1, short:'Cleanest', name:'Cleanest City', sdg:'SDG 13', what:'Least warming', fmt:function(v){return '+'+v.toFixed(2)+'°C';}},
+ {key:'hap', dir:1, short:'Happiest', name:'Happiest City', sdg:'People', what:'Happiest people', fmt:function(v){return v+' out of 10';}},
+ {key:'shield', dir:1, tie:'money', short:'Protected', name:'Best Protected City', sdg:'SDG 9', what:'Most shields', fmt:function(v){return v+' of '+MAXS+' shields';}}
+];
+
+/* ---------- storage ---------- */
+var KEY = 'carbonBudgetCity.v2';
+var storageOk = true;
+try { localStorage.setItem('__cbc','1'); localStorage.removeItem('__cbc'); } catch(e){ storageOk = false; }
+function fresh(){ return {seed:Math.floor(Math.random()*2147483647), groups:[]}; }
+function load(){
+  if(!storageOk) return null;
+  try{ var d = JSON.parse(localStorage.getItem(KEY)); if(d && Array.isArray(d.groups) && typeof d.seed==='number') return d; }catch(e){}
+  return null;
+}
+function save(){ if(!storageOk) return; try{ localStorage.setItem(KEY, JSON.stringify(store)); }catch(e){ storageOk=false; } }
+var store = load() || fresh();
+save();
+
+var SKYLINE = '<svg viewBox="0 0 640 140" role="img" aria-label="City skyline with wind turbines"><circle cx="560" cy="34" r="20" style="fill:var(--c-coin)"/>'+
+ '<g style="fill:var(--line)"><rect x="10" y="72" width="50" height="68"/><rect x="70" y="40" width="44" height="100"/><rect x="124" y="86" width="56" height="54"/><rect x="190" y="56" width="40" height="84"/><rect x="240" y="92" width="60" height="48"/><rect x="310" y="66" width="46" height="74"/></g>'+
+ '<g style="stroke:var(--accent);stroke-width:4;stroke-linecap:round;fill:none"><path d="M430 140V62M430 62V24M430 62L463 81M430 62L397 81"/><path d="M510 140V86M510 86V62M510 86L531 98M510 86L489 98"/></g></svg>';
+
+/* ---------- helpers ---------- */
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function cl10(v){ return Math.max(0, Math.min(10, v)); }
+function signed(n){ return n>0 ? '+'+n : n<0 ? '−'+Math.abs(n) : '0'; }
+function proj(cum, P, left){ return WARM0 + (cum + P*left)*WARMK; }
+function climatePts(t){ return Math.max(0, Math.min(100, Math.round((2.9-t)/1.3*100))); }
+function rng(seed){ var a = seed>>>0; return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function eventOrder(){
+  var keys = Object.keys(EVENTS), r = rng(store.seed);
+  for(var i=keys.length-1;i>0;i--){ var j=Math.floor(r()*(i+1)); var t=keys[i]; keys[i]=keys[j]; keys[j]=t; }
+  return keys.slice(0,N);
+}
+function dcls(v, good){ if(!v || !good) return 'zero'; return v*good>0 ? 'good' : 'bad'; }
+function plural(n, w){ return n+' '+w+(n===1?'':'s'); }
+var NOCHANGE = proj(0, START.P, N);
+
+/* ---------- state ---------- */
+var S = {screen:'home', sort:'overall', error:'', confirmReset:false};
+var G = null;
+
+function newGame(name){
+  var base = name, n = 2, lower = store.groups.map(function(g){return g.name.toLowerCase();});
+  while(lower.indexOf(name.toLowerCase())>-1){ name = base+' ('+n+')'; n++; }
+  G = {name:name, round:0, P:START.P, money:START.money+INCOME, hap:START.hap, shield:START.shield, cum:0,
+       sel:null, phase:'choose', log:[], last:null, events:eventOrder(), saved:null};
+}
+
+function lockIn(){
+  var R = ROUNDS[G.round], o = R.options.filter(function(x){return x.id===G.sel;})[0];
+  if(!o || o.cost>G.money || G.phase!=='choose') return;
+  var before = {P:G.P, money:G.money, hap:G.hap, shield:G.shield}, cumBefore = G.cum;
+  G.money -= o.cost; G.P = Math.max(0, G.P+o.p); G.hap = cl10(G.hap+o.h); G.shield += o.s;
+  G.cum += G.P;
+  var key = G.events[G.round], ev = EVENTS[key], dm = 0, dh = 0, blocked = 0;
+  if(ev.hit){
+    var lh = Math.max(0, ev.hit.h-G.shield), lm = Math.max(0, ev.hit.m-G.shield);
+    blocked = (ev.hit.h-lh)+(ev.hit.m-lm); dh = -lh; dm = -lm;
+  } else if(ev.positive){ dm = Math.min(3, Math.max(0, Math.floor((8-G.P)/2))); }
+  else { dm = -Math.round(G.P/3); }
+  G.money = Math.max(0, G.money+dm); G.hap = cl10(G.hap+dh);
+  var air = G.P>=7 ? -1 : G.P<=3 ? 1 : 0;
+  G.hap = cl10(G.hap+air);
+  var after = {P:G.P, money:G.money, hap:G.hap, shield:G.shield};
+  G.last = {opt:o, key:key, before:before, after:after, dm:dm, dh:dh, air:air, blocked:blocked, cumBefore:cumBefore};
+  G.log.push({year:R.year, opt:o.name, tier:TIERS[R.options.indexOf(o)], ev:ev.name});
+  G.phase = 'outcome';
+}
+function nextRound(){
+  if(G.round === N-1){ finish(); return; }
+  G.round++; G.money += INCOME; G.sel = null; G.phase = 'choose'; G.last = null;
+}
+function finish(){
+  var temp = Math.round((WARM0 + G.cum*WARMK)*100)/100;
+  var e = {id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), name:G.name, temp:temp, hap:G.hap, shield:G.shield, money:G.money, P:G.P,
+           score:Math.round((climatePts(temp)+G.hap*10+G.shield/MAXS*100)/3), when:new Date().toISOString(), log:G.log};
+  store.groups.push(e); save(); G.saved = e; S.screen='final'; S.sort='overall';
+}
+
+/* ---------- leaderboard ---------- */
+function leaders(cat){
+  var gs = store.groups; if(!gs.length) return [];
+  var vals = gs.map(function(g){return g[cat.key];});
+  var best = cat.dir<0 ? Math.min.apply(null,vals) : Math.max.apply(null,vals);
+  var top = gs.filter(function(g){return g[cat.key]===best;});
+  if(cat.tie && top.length>1){
+    var m = Math.max.apply(null, top.map(function(g){return g[cat.tie];}));
+    top = top.filter(function(g){return g[cat.tie]===m;});
+  }
+  return top;
+}
+function sorted(sort){
+  var a = store.groups.slice();
+  a.sort(function(x,y){
+    if(sort==='temp') return x.temp-y.temp || y.score-x.score;
+    if(sort==='hap') return y.hap-x.hap || y.score-x.score;
+    if(sort==='shield') return y.shield-x.shield || y.money-x.money || y.score-x.score;
+    return y.score-x.score || x.temp-y.temp;
+  });
+  return a;
+}
+function awardsHTML(meId){
+  return '<div class="awards">'+CATS.map(function(c){
+    var L = leaders(c);
+    if(!L.length) return '<div class="award empty"><span class="label">'+c.sdg+' · '+c.what+'</span><h3>'+c.name+'</h3><p class="who">No group yet</p></div>';
+    var mine = meId && L.some(function(g){return g.id===meId;});
+    return '<div class="award"><span class="label">'+c.sdg+' · '+c.what+'</span><h3>'+c.name+'</h3><p class="who">'+L.map(function(g){return esc(g.name);}).join(' &amp; ')+'</p><p class="val">'+c.fmt(L[0][c.key])+'</p>'+(mine?'<span class="you">That is your group</span>':'')+'</div>';
+  }).join('')+'</div>';
+}
+function boardHTML(meId){
+  var tabs = [['overall','Overall'],['temp','Warming'],['hap','Happiness'],['shield','Shields']];
+  var head = '<div class="tabs" role="group" aria-label="Sort leaderboard">'+tabs.map(function(t){
+    return '<button class="tab" data-act="sort" data-sort="'+t[0]+'" aria-pressed="'+(S.sort===t[0])+'">'+t[1]+'</button>';}).join('')+'</div>';
+  if(!store.groups.length) return head+'<p class="muted">No groups have played yet. The first result will show here.</p>';
+  var lead = {}; CATS.forEach(function(c){ leaders(c).forEach(function(g){ (lead[g.id]=lead[g.id]||[]).push(c.short); }); });
+  var rows = sorted(S.sort).map(function(g,i){
+    var b = (lead[g.id]||[]).map(function(x){return '<span class="badge">'+x+'</span>';}).join('');
+    return '<tr'+(g.id===meId?' class="me"':'')+'><td>'+(i+1)+'. '+esc(g.name)+(b?'<span class="badges">'+b+'</span>':'')+'</td><td>+'+g.temp.toFixed(2)+'°C</td><td>'+g.hap+'</td><td>'+g.shield+'</td><td>'+g.score+'</td></tr>';
+  }).join('');
+  return head+'<div class="tablewrap"><table><caption class="sr">Leaderboard</caption><thead><tr><th scope="col">Group</th><th scope="col">Warming</th><th scope="col">Happiness</th><th scope="col">Shields</th><th scope="col">Score</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+/* ---------- views ---------- */
+function homeHTML(){
+  return '<main class="wrap">'+
+  '<div class="home-top"><section class="hero">'+
+    '<p class="label">UN Day · SDG 13 Climate Action and SDG 9 Industry, Innovation and Infrastructure</p>'+
+    '<h1 id="title" tabindex="-1">Carbon Budget City</h1>'+
+    '<div class="banner">'+SKYLINE+'</div>'+
+    '<div class="start-form" id="startForm">'+
+      '<label class="label" for="gname">Group name</label>'+
+      '<div class="row"><input id="gname" name="gname" maxlength="24" autocomplete="off" placeholder="For example: The Green Giants"><button class="btn" type="button" data-act="start">Start</button></div>'+
+      '<p class="err" id="err" role="alert">'+esc(S.error)+'</p>'+
+    '</div>'+
+    (storageOk ? '' : '<p class="notice">This browser is blocking storage. Results will disappear when the page closes.</p>')+
+  '</section>'+
+  '<section class="card"><h2>Best in the room</h2>'+awardsHTML(null)+'</section></div>'+
+  '<section class="card"><h2>Leaderboard</h2>'+boardHTML(null)+'</section>'+
+  '<div class="foot"><span class="muted">'+(storageOk?'Results are saved in this browser on this computer.':'Results are not being saved.')+'</span><div class="grp">'+
+    '<button class="btn ghost small" data-act="fs">Full screen</button>'+
+    '<button class="btn ghost small danger" data-act="reset">'+(S.confirmReset?'Click again to erase all groups':'Reset leaderboard')+'</button></div></div>'+
+  '</main>';
+}
+
+function dots(n){ var s=''; for(var i=0;i<MAXS;i++) s += i<n ? '●' : '○'; return s; }
+function meterHTML(label, k, to, from, o){
+  var v = to[k], p = from ? from[k] : v, d = v-p;
+  var delta = from && d ? '<span class="delta '+dcls(d,o.good)+'">'+signed(d)+'</span>' : '';
+  var main, bar = '';
+  if(o.dots) main = '<div class="dots" aria-label="'+plural(v,'shield')+'">'+dots(v)+'</div>';
+  else {
+    main = '<div class="num">'+v+'<small>'+o.unit+'</small></div>';
+    var w = function(x){ return Math.min(100, Math.max(0, x/o.max*100)); };
+    if(o.max) bar = '<div class="track" aria-hidden="true"><div class="fill" style="width:'+w(p)+'%" data-to="'+w(v)+'"></div></div>';
+  }
+  return '<div class="gauge" style="--c:'+o.c+'"><div class="top"><span class="label">'+label+'</span>'+delta+'</div>'+main+bar+(o.sub?'<span class="sub">'+o.sub+'</span>':'')+'</div>';
+}
+function instrumentsHTML(to, from, tNow){
+  return '<section class="instruments" aria-label="City meters"><div class="gauge"><span class="label">Earth warming by 2100</span>'+
+    '<div class="num">+'+tNow.toFixed(1)+'<small> °C</small></div><span class="sub">If we keep going like this. Lower is better.</span></div>'+
+    meterHTML('Pollution','P',to,from,{good:-1,unit:'',max:14,sub:'Lower is better',c:'var(--c-poll)'})+
+    meterHTML('Coins','money',to,from,{good:0,unit:'',max:0,c:'var(--c-coin)'})+
+    meterHTML('Happiness','hap',to,from,{good:1,unit:' / 10',max:10,c:'var(--c-happy)'})+
+    meterHTML('Shields','shield',to,from,{good:1,dots:true,c:'var(--c-shield)'})+'</section>';
+}
+function optionHTML(o, i){
+  var afford = o.cost <= G.money, sel = G.sel===o.id;
+  function st(label, v, good){ return '<div class="stat"><span class="label">'+label+'</span><b class="'+dcls(v,good)+'">'+(v?signed(v):'–')+'</b></div>'; }
+  var cost = o.cost ? plural(o.cost,'coin') : 'Free';
+  return '<button class="opt" data-act="select" data-id="'+o.id+'" aria-pressed="'+sel+'" aria-disabled="'+(!afford)+'">'+
+    '<span class="pill t'+i+'">'+TIERS[i]+'</span><h3>'+esc(o.name)+'</h3><p class="desc">'+esc(o.desc)+'</p>'+
+    '<div class="stats"><div class="stat"><span class="label">Cost</span><b>'+cost+'</b></div>'+st('Pollution',o.p,-1)+st('Happiness',o.h,1)+st('Shields',o.s,1)+'</div>'+
+    (afford?'':'<span class="lock">You need '+plural(o.cost-G.money,'more coin')+'</span>')+'</button>';
+}
+function playHTML(){
+  var R = ROUNDS[G.round], ek = G.events[G.round], ev = EVENTS[ek], out = G.phase==='outcome';
+  var cur = {P:G.P, money:G.money, hap:G.hap, shield:G.shield};
+  var tNow = proj(G.cum, G.P, N-G.round-(out?1:0));
+  var head = '<div class="titleblock"><div><span class="label">Round</span><span class="big">'+(G.round+1)+' of '+N+'</span></div>'+
+    '<div><span class="label">'+esc(R.sdg)+'</span><span class="big">'+esc(G.name)+'</span></div>'+
+    '<div><span class="label">Year</span><span class="big">'+R.year+'</span></div></div>';
+  var inst, body;
+  if(!out){
+    inst = instrumentsHTML(cur, null, tNow);
+    body = '<section class="outlook"><span class="label">Coming this round</span><br><b>'+ev.name+'.</b> '+ev.hint+'</section>'+
+      '<h2 id="sheet" tabindex="-1">'+R.title+'</h2>'+
+      '<section class="options" aria-label="Choices">'+R.options.map(function(o,i){return optionHTML(o,i);}).join('')+'</section>'+
+      confirmHTML(R);
+  } else {
+    inst = instrumentsHTML(G.last.after, G.last.before, tNow);
+    body = outcomeHTML(R, ev);
+  }
+  return '<main class="wrap">'+head+inst+body+'</main>';
+}
+function confirmHTML(R){
+  var o = R.options.filter(function(x){return x.id===G.sel;})[0];
+  var msg = o ? 'You picked <b>'+esc(o.name)+'</b>. Is the whole group happy with this?' : 'Pick one choice.';
+  return '<div class="confirm"><p aria-live="polite">'+msg+'</p><button class="btn" data-act="lock"'+(o?'':' disabled')+'>Lock it in</button></div>';
+}
+function outcomeHTML(R, ev){
+  var L = G.last, o = L.opt, res;
+  if(ev.hit){
+    var lost = [];
+    if(L.dh) lost.push(plural(-L.dh,'happiness point'));
+    if(L.dm) lost.push(plural(-L.dm,'coin'));
+    res = (lost.length ? 'You lost '+lost.join(' and ')+'. ' : 'You lost nothing. ')+(L.blocked ? 'Your shields blocked '+plural(L.blocked,'point')+'.' : (G.shield? '' : 'You had no shields.'));
+  } else if(ev.positive){
+    res = L.dm ? 'You gained '+plural(L.dm,'coin')+' because your pollution is low.' : 'Your pollution is too high to get any coins.';
+  } else {
+    res = L.dm ? 'You paid '+plural(-L.dm,'coin')+'. A lot of pollution means a big bill.' : 'You paid nothing because your pollution is very low.';
+  }
+  var airNote = L.air>0 ? 'Clean air made people happier (+1).' : L.air<0 ? 'Dirty air made people less happy (−1).' : '';
+  var rows = [['Pollution','P',-1],['Coins','money',0],['Happiness','hap',1],['Shields','shield',1]].map(function(m){
+    var d = L.after[m[1]]-L.before[m[1]];
+    return '<li><span>'+m[0]+'</span><span>'+L.before[m[1]]+' → <b>'+L.after[m[1]]+'</b> <span class="'+dcls(d,m[2])+'">'+(d?'('+signed(d)+')':'')+'</span></span></li>';
+  }).join('');
+  return '<h2 id="sheet" tabindex="-1">What happened in '+R.year+'</h2><div class="outcome">'+
+    '<div class="card"><span class="label">Your choice</span><h3>'+esc(o.name)+'</h3>'+
+    '<span class="label">Then this happened</span><h3>'+ev.name+'</h3><p>'+ev.desc+'</p><p class="result-line">'+res+(airNote?' '+airNote:'')+'</p></div>'+
+    '<div class="card"><span class="label">What changed</span><ul class="changes">'+rows+'</ul></div></div>'+
+    '<div class="nextbar"><button class="btn" data-act="next">'+(G.round===N-1?'See final results':'Next: '+ROUNDS[G.round+1].year)+'</button></div>';
+}
+function finalHTML(){
+  var g = G.saved, v;
+  if(g.temp < 2.0) v = 'Great job! This is close to the world goal of staying under 2°C.';
+  else if(g.temp < NOCHANGE-0.15) v = 'Good. This is better than doing nothing.';
+  else v = 'About the same as doing nothing. Cleaner choices would help.';
+  var recap = g.log.map(function(r){ return '<li><span class="y">'+r.year+'</span><span><b>'+esc(r.opt)+'</b><br><span class="muted">'+r.tier+'</span></span><span class="muted">'+r.ev+'</span></li>'; }).join('');
+  return '<main class="wrap">'+
+    '<div class="titleblock"><div><span class="label">Final results</span><span class="big">2050</span></div><div><span class="label">Group</span><span class="big">'+esc(g.name)+'</span></div><div><span class="label">Score</span><span class="big">'+g.score+'</span></div></div>'+
+    '<div class="final-top"><section class="card"><span class="label">Earth warming by 2100</span><div class="bignum" id="sheet" tabindex="-1">+'+g.temp.toFixed(1)+'°C</div>'+
+      '<p class="lede">'+v+'</p><p class="muted">Doing nothing would give about +'+NOCHANGE.toFixed(1)+'°C in this game.</p>'+
+      '<div class="statrow"><div><b>'+g.hap+'</b><span class="label">Happiness (of 10)</span></div><div><b>'+g.shield+'</b><span class="label">Shields (of '+MAXS+')</span></div><div><b>'+g.money+'</b><span class="label">Coins left</span></div><div><b>'+g.P+'</b><span class="label">Pollution</span></div></div></section>'+
+      '<section class="card"><h2>Best in the room</h2>'+awardsHTML(g.id)+'</section></div>'+
+    '<section class="card"><h2>Leaderboard</h2>'+boardHTML(g.id)+'</section>'+
+    '<section class="card"><h2>Your choices</h2><ul class="recap">'+recap+'</ul></section>'+
+    '<section class="prompts"><p class="prompt">Which choice was the hardest?</p><p class="prompt">What would you change next time?</p><p class="prompt">Why do clean choices cost more at first?</p></section>'+
+    '<div class="foot"><span class="muted">Saved to the leaderboard on this computer.</span><div class="grp"><button class="btn" data-act="home">Next group</button></div></div></main>';
+}
+
+/* ---------- render + events ---------- */
+var app = document.getElementById('app');
+function render(focusSel){
+  app.innerHTML = S.screen==='home' ? homeHTML() : S.screen==='play' ? playHTML() : finalHTML();
+  var f = focusSel && app.querySelector(focusSel);
+  if(f){ try{ f.focus({preventScroll:false}); }catch(e){} }
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){
+    Array.prototype.forEach.call(app.querySelectorAll('.fill[data-to]'), function(el){ el.style.width = el.getAttribute('data-to')+'%'; });
+  }); });
+}
+function startGame(){
+  var name = (document.getElementById('gname').value || '').replace(/\s+/g,' ').trim();
+  if(!name){ S.error = 'Give your group a name to start.'; render('#gname'); return; }
+  S.error = ''; newGame(name); S.screen = 'play'; render('#sheet');
+}
+app.addEventListener('click', function(e){
+  var t = e.target.closest('[data-act]'); if(!t) return;
+  var a = t.getAttribute('data-act');
+  if(a==='start'){ startGame(); }
+  else if(a==='select'){ if(t.getAttribute('aria-disabled')==='true' || G.phase!=='choose') return; G.sel = t.getAttribute('data-id'); render('.opt[data-id="'+G.sel+'"]'); }
+  else if(a==='lock'){ lockIn(); render('#sheet'); }
+  else if(a==='next'){ nextRound(); render('#sheet'); }
+  else if(a==='home'){ S.screen='home'; S.error=''; G=null; render('#title'); }
+  else if(a==='sort'){ S.sort = t.getAttribute('data-sort'); render('.tab[data-sort="'+S.sort+'"]'); }
+  else if(a==='fs'){ try{ var p = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if(p && p.catch) p.catch(function(){}); }catch(err){} }
+  else if(a==='reset'){
+    if(!S.confirmReset){ S.confirmReset = true; render('[data-act="reset"]'); setTimeout(function(){ if(S.confirmReset){ S.confirmReset=false; if(S.screen==='home') render(); } }, 4000); }
+    else { store = fresh(); save(); S.confirmReset = false; render('#title'); }
+  }
+});
+document.addEventListener('keydown', function(e){
+  if(e.key==='Enter' && e.target && e.target.id==='gname'){ e.preventDefault(); startGame(); return; }
+  if(S.screen!=='play' || !G || G.phase!=='choose') return;
+  var tag = (document.activeElement && document.activeElement.tagName) || '';
+  if(tag==='INPUT' || tag==='TEXTAREA') return;
+  if(e.key==='1' || e.key==='2' || e.key==='3'){
+    var o = ROUNDS[G.round].options[Number(e.key)-1];
+    if(o && o.cost <= G.money){ G.sel = o.id; render('.opt[data-id="'+o.id+'"]'); }
+  }
+});
+render();
+})();
+</script>
